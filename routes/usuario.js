@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const bcrypt = require('bcryptjs');
 const Usuario = require('../models/usuario');
-const jwt = require('jsonwebtoken');
 const mdAutenticacion = require('../midlewares/autenticacion');
 
 /* 
@@ -59,6 +58,7 @@ app.post('/',  mdAutenticacion.verificaToken, (req, res) => {
         res.status(201).json({
             ok: true,
             usuario: usuarioGuardado,
+            mensaje:'Usuario Creado Exitosamente',
             usuariotoken: req.usuario
         });
     });
@@ -106,6 +106,7 @@ app.put('/:id',  mdAutenticacion.verificaToken, (req, res) => {
             }
             res.status(200).json({
                 ok: true,
+                mensaje:'Usuario Actualizado Exitosamente',
                 usuario: usuarioGuardado
             });
         });
@@ -139,6 +140,7 @@ app.delete('/:id',mdAutenticacion.verificaToken, (req, res) => {
         }
         res.status(200).json({
             ok: true,
+            mensaje:'Usuario Eliminado Exitosamente',
             usuario: usuarioEliminado
         });
     });
