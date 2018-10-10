@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const Producto = require('../models/producto');
-
+const mdAutenticacion = require('../midlewares/autenticacion');
 
 /* 
 ===========================================
@@ -9,7 +9,16 @@ Peticion "GET" obtener todos los productos
 ===========================================
 */
 app.get('/', (req, res) => {
-    Producto.find({}).exec((err, productos) => {
+    
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
+
+    Producto.find({})
+    .skip(desde)
+    .limit(5)
+    .exec(
+        (err, productos) => {
         if (err) {
             return res.status(500).json({
                 ok: false,
@@ -17,10 +26,13 @@ app.get('/', (req, res) => {
                 errors: err
             });
         }
-        res.status(200).json({
-            ok: true,
-            productos: productos
-        });
+            Producto.count({}, (err, conteo) =>{
+                res.status(200).json({
+                ok: true,
+                productos: productos,
+                total: conteo
+            });
+        })
     });
 });
 
@@ -29,13 +41,16 @@ app.get('/', (req, res) => {
 Peticion "POST" crear un nuevo producto
 ===========================================
 */
-app.post('/', (req, res) => {
+app.post('/', mdAutenticacion.verificaToken, (req, res) => {
     const body = req.body;
 
+
+     
     const producto = new Producto({
         nombreProducto: body.nombreProducto,
         img: body.img,
         descripcion: body.descripcion,
+        seccion: body.seccion,
         size: body.size,
         precio: body.precio
     });
@@ -49,14 +64,15 @@ app.post('/', (req, res) => {
                 errors: err
             });
         }
-
+        
         return res.status(201).json({
             ok: true,
             mensaje: "Producto Guardado Exitosamente",
-            procucto: productoGuardado
+            procucto: productoGuardado,
+            usuariotoken: req.usuario
         });
     });
-
+ 
 });
 
 /* 
@@ -64,7 +80,7 @@ app.post('/', (req, res) => {
 Peticion "PUT" Actualizar producto
 ===========================================
 */
-app.put('/:id', (req, res) => {
+app.put('/:id', mdAutenticacion.verificaToken, (req, res) => {
     const id = req.params.id;
     const body = req.body;
 
@@ -101,7 +117,7 @@ app.put('/:id', (req, res) => {
             }
             res.status(200).json({
                 ok: true,
-                mensaje:'Producto Actualizado Correactamente.',
+                mensaje: 'Producto Actualizado Correactamente.',
                 producto: productoGuardado
             });
         });
@@ -112,27 +128,31 @@ app.put('/:id', (req, res) => {
 Peticion "DELETE" Eliminar producto
 ===========================================
 */
-app.delete('/:id',(req,res) =>{
-    const id= req.params.id;
-    Producto.findByIdAndDelete(id, (err, productoEliminado) =>{
-        if(err){
+app.delete('/:id', mdAutenticacion.verificaToken, (req, res) => {
+    const id = req.params.id;
+    Producto.findByIdAndDelete(id, (err, productoEliminado) => {
+        if (err) {
             return res.status(500).json({
                 ok: false,
                 mensaje: 'Error al borrar Producto',
                 erros: err
             });
         }
-        if(!productoEliminado){
+        if (!productoEliminado) {
             return res.status(400).json({
                 ok: false,
-                mensaje: 'No existe un producto con el id'+id 
+                mensaje: 'No existe un producto con el id' + id
             });
         }
-        res.status(200).json({
+      
+            res.status(200).json({
             ok: true,
             mensaje: 'Producto Eliminado Exitosamente',
-            producto: productoEliminado
-        });
+            producto: productoEliminado,
+             
+         
+        })
+        
     });
 });
 

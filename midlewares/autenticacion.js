@@ -12,9 +12,9 @@ exports.verificaToken = function (req, res, next) {
     const token = req.query.token;
     jwt.verify(token, SEED, (err, decoded) => {
         if (err) {
-            return res.status(401).json({ // 401 not Unauthorized (must be authenticated)
+            return res.status(401).json({ // 401 Not Unauthorized (must be authenticated)
                 ok: false,
-                mensaje: 'Token incorrecto.',
+                mensaje: 'Token incorrecto!, necesitas Iniciar Sesion.',
                 errors: err
             });
         }

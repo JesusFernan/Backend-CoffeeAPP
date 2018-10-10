@@ -17,6 +17,8 @@ const usuarioRoutes = require('./routes/usuario');
 const appRoutes = require('./routes/app');
 const loginRoutes = require('./routes/login');
 const productoRoutes = require('./routes/producto');
+const busquedaRoutes = require('./routes/busqueda');
+
 
 // Conexion a la base de datos
 
@@ -31,11 +33,12 @@ mongoose.connection.openUri('mongodb://localhost:27017/CoffeeApp', { useNewUrlPa
 
  
 // Rutas
+app.use('/busqueda', busquedaRoutes);
 app.use('/producto',productoRoutes);
 app.use('/usuario', usuarioRoutes); 
 app.use('/login', loginRoutes);
 app.use('/', appRoutes); 
-
+ 
 
  
 

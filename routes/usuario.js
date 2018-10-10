@@ -10,6 +10,8 @@ Peticion "GET" obtener todos los usuarios
 ===========================================
 */
 app.get('/', (req, res, next) => {
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
 
     Usuario.find({}, 'nombre email img role')
         .exec(
@@ -21,12 +23,15 @@ app.get('/', (req, res, next) => {
                         errors: err
                     });
                 }
-                res.status(200).json({
+                Usuario.count({}, (err, conteo) =>{
+                    res.status(200).json({
                     ok: true,
-                    usuarios: usuarios
+                    usuarios: usuarios,
+                    total: conteo
                 });
-
-            });
+          })
+                
+     });
 });
 
 
@@ -138,11 +143,16 @@ app.delete('/:id',mdAutenticacion.verificaToken, (req, res) => {
                 }
             });
         }
-        res.status(200).json({
-            ok: true,
-            mensaje:'Usuario Eliminado Exitosamente',
-            usuario: usuarioEliminado
-        });
+
+         
+                res.status(200).json({
+                ok: true,
+                mensaje:'Usuario Eliminado Exitosamente',
+                usuario: usuarioEliminado,
+                
+         
+        })
+        
     });
 });
 
