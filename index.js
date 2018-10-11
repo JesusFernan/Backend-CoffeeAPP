@@ -13,11 +13,12 @@ app.use(bodyParser.json())
 
 
 // Importar Rutas
-const usuarioRoutes = require('./routes/usuario');
-const appRoutes = require('./routes/app');
 const loginRoutes = require('./routes/login');
+const appRoutes = require('./routes/app');
+const usuarioRoutes = require('./routes/usuario');
 const productoRoutes = require('./routes/producto');
 const busquedaRoutes = require('./routes/busqueda');
+const uploadRoutes = require('./routes/upload');
 
 
 // Conexion a la base de datos
@@ -33,6 +34,7 @@ mongoose.connection.openUri('mongodb://localhost:27017/CoffeeApp', { useNewUrlPa
 
  
 // Rutas
+app.use('/upload', uploadRoutes);
 app.use('/busqueda', busquedaRoutes);
 app.use('/producto',productoRoutes);
 app.use('/usuario', usuarioRoutes); 
