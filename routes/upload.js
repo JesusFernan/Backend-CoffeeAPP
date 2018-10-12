@@ -1,6 +1,11 @@
 const express = require('express');
-const app = express();
 const fileUpload = require('express-fileupload');
+var fs = require('fs');
+
+const app = express();
+
+const Usuario = require('../models/usuario');
+const Producto = require('../models/producto');
 
 // default options
 app.use(fileUpload());
@@ -12,11 +17,13 @@ app.put('/:tipo/:id', (req, res, next) => {
 
     //Tipo de colección
     const tiposValidos = ['usuarios', 'productos'];
-    if (tiposValidos.indexOf(tipo) < 0 ){
+    if (tiposValidos.indexOf(tipo) < 0) {
         return res.status(400).json({
             ok: false,
             mensaje: 'Tipo de colección no es valida!',
-            errors: {mesage: 'Tipo de colección no es valida!'}
+            errors: {
+                mesage: 'Tipo de colección no es valida!'
+            }
         });
     }
     const imagen = req.files; // cargamos archivos
@@ -41,7 +48,9 @@ app.put('/:tipo/:id', (req, res, next) => {
         return res.status(400).json({
             ok: false,
             mensaje: 'Extension no válida!',
-            erros: {message: 'Las unicas extensiones válidas son: ' + extensionesValidas.join(', ')}
+            erros: {
+                message: 'Las unicas extensiones válidas son: ' + extensionesValidas.join(', ')
+            }
         });
     }
     /*Nombre de la imagen personalizada
@@ -49,7 +58,7 @@ app.put('/:tipo/:id', (req, res, next) => {
       Ejemplo  12312312312-123.png
       Esto para que no pueda haber otro nombre igual y no truene al momento de subir*/
 
-    
+
     //Mover el archivo a un PATH
     var nombreArchivo = `${ id }-${ new Date().getMilliseconds() }.${ extensionArchivo }`;
 
@@ -66,15 +75,81 @@ app.put('/:tipo/:id', (req, res, next) => {
                 errors: err
             });
         }
-       res.status(200).json({
-            ok: true,
-            mensaje: 'Archivo movido correctamente!',
-             
-        });
-     })
+        subirPorTipo(tipo, id, nombreArchivo, res);
+    })
 
 });
 
+function subirPorTipo(tipo, id, nombreArchivo, res) {
+    switch (tipo) {
+        case 'usuarios':
+            //Buscas el usuario por el ID y ha la tabla que pertenece
+            Usuario.findById(id, (err, usuario) => {
+                if (!usuario) {
+                    return res.status(400).json({
+                        ok: false,
+                        mensaje: 'Usuario no existe!',
+                        erros: {
+                            message: 'Usuario no existe!'
+                        }
+                    });
+                }
+                const pathViejo = './uploads/usuarios/' + usuario.img;
+                //Si existe, elimina la imagen anterior
+                if (fs.existsSync(pathViejo)) {
+                    fs.unlink(pathViejo);
+                }
+                       
+     
+                usuario.img = nombreArchivo;
+                usuario.save((err, usuarioActualizado) => {
+                usuarioActualizado.password = ':)';
+                    
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Imagen de usuario actualizada correcamente!',
+                        usuario: usuarioActualizado
+                    });
+                })
+            });
+            break;
+ 
+        case 'productos':
+            Producto.findById(id, (err, producto) => {
+            
+                if (!producto) {
+                    return res.status(400).json({
+                        ok: false,
+                        mensaje: 'Producto no existe!',
+                        erros: {
+                            message: 'Producto no existe!'
+                        }
+                    });
+                }
+                const pathViejo = './uploads/productos/' + producto.img;
+                //Si existe, elimina la imagen anterior
+                if (fs.existsSync(pathViejo)) {
+                    fs.unlink(pathViejo);
+                }
+                producto.img = nombreArchivo;
+                producto.save((err, productoActualizado) => {
+                    return res.status(200).json({
+                        ok: true,
+                        mensaje: 'Imagen de producto actualizada correcamente!',
+                        usuario: productoActualizado
+                    });
+                })
+            });
+            break;
+ 
+            default:
+            return res.status(400).json({
+                ok: false,
+                mensaje: 'Los tipos de busqueda sólo  son: usuarios y productos',
+                error: { message: 'Tipo de tabla/coleccion no válido'}
+            });
+    }
+}
 
 
 module.exports = app;

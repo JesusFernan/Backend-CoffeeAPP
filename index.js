@@ -19,12 +19,14 @@ const usuarioRoutes = require('./routes/usuario');
 const productoRoutes = require('./routes/producto');
 const busquedaRoutes = require('./routes/busqueda');
 const uploadRoutes = require('./routes/upload');
+const imagenesRoutes = require('./routes/imagenes');
+
 
 
 // Conexion a la base de datos
 
 mongoose.connection.openUri('mongodb://localhost:27017/CoffeeApp', { useNewUrlParser: true }, (err,res) =>{
-    mongoose.set('createIndexes', true);
+    
     if( err ) throw err;
     
         const colorOnline = '\x1b[32m%s\x1b[0m'
@@ -34,6 +36,7 @@ mongoose.connection.openUri('mongodb://localhost:27017/CoffeeApp', { useNewUrlPa
 
  
 // Rutas
+app.use('/img', imagenesRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/busqueda', busquedaRoutes);
 app.use('/producto',productoRoutes);
